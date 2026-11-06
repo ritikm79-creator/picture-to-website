@@ -28,3 +28,5 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+- Keep client-imported server-function RPCs and shared validation under `src/lib`, load privileged database clients only inside server handlers, and keep abuse counters durable in a restricted database table because Worker instances are stateless.
