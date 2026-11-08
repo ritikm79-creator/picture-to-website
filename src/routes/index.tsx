@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
+import { type FormEvent, useState } from "react";
 import {
   ArrowDown,
   ArrowRight,
@@ -12,16 +13,22 @@ import {
   FileText,
   Globe2,
   LineChart,
-  Menu,
   MessageCircle,
+  Menu,
   ShieldCheck,
   Sparkles,
   X,
 } from "lucide-react";
-import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { businessConfig, getWhatsAppLink } from "@/lib/business-config";
@@ -84,7 +91,7 @@ const services = [
   },
   {
     number: "04",
-    title: "Portfolio Guidance",
+    title: "Portfolio Management",
     eyebrow: "PERSONALISED SUPPORT",
     description:
       "Discuss investment objectives, asset allocation, and ongoing portfolio considerations.",
@@ -138,6 +145,26 @@ type EnquiryFields = {
   website: string;
 };
 
+type LegalDocument = "privacy" | "terms" | "risk" | null;
+
+const legalContent = {
+  privacy: {
+    title: "Privacy notice",
+    description:
+      "The enquiry form collects your name, phone number, email address, selected topic, and message. Money Talks uses these details to review and respond to your enquiry. Enquiries are stored privately; visitors cannot view or change other people's submissions. You can contact Money Talks to ask about your enquiry details.",
+  },
+  terms: {
+    title: "Terms and conditions",
+    description:
+      "The information on this website introduces Money Talks and its financial information and education services. Before proceeding with a service, discuss its scope, eligibility, applicable regulatory authorisation, any fees, and relevant risks directly with the business.",
+  },
+  risk: {
+    title: "Financial risk disclosure",
+    description:
+      "Investing in shares, unlisted securities, and foreign-exchange trading involves risk and may result in the loss of capital. Educational information does not guarantee an outcome or constitute a promise of returns. Consider your circumstances, eligibility, the service's applicable authorisation, and all associated fees and risks before proceeding.",
+  },
+} as const;
+
 const initialFields: EnquiryFields = {
   name: "",
   phone: "",
@@ -178,7 +205,7 @@ function ChartArtwork() {
     [342, 44, 37, 25],
     [382, 30, 26, 22],
     [421, 37, 36, 32],
-  ];
+  ] as const;
 
   return (
     <svg aria-label="Illustrative financial market chart" className="chart-art" viewBox="0 0 500 250">
@@ -211,6 +238,7 @@ function SectionHeading({ eyebrow, title, description }: { eyebrow: string; titl
 
 function Index() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [activeLegalDocument, setActiveLegalDocument] = useState<LegalDocument>(null);
   const [fields, setFields] = useState(initialFields);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
@@ -228,7 +256,7 @@ function Index() {
     setFieldErrors((previous) => ({ ...previous, service: "" }));
   }
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (status === "submitting") return;
 
@@ -291,8 +319,8 @@ function Index() {
               </a>
             ))}
           </div>
-          <a className="nav-action" href="#contact">
-            Send an enquiry <ArrowRight aria-hidden="true" size={16} />
+          <a className="nav-action" href={whatsappLink ?? "#contact"} rel={whatsappLink ? "noreferrer" : undefined} target={whatsappLink ? "_blank" : undefined}>
+            {whatsappLink ? "WhatsApp" : "Send an enquiry"} <ArrowRight aria-hidden="true" size={16} />
           </a>
           <Button
             aria-label={menuOpen ? "Close navigation" : "Open navigation"}
@@ -503,33 +531,33 @@ function Index() {
               <form className="enquiry-form" noValidate onSubmit={handleSubmit}>
                 <div aria-hidden="true" className="honeypot-field"><label htmlFor="website">Website</label><input autoComplete="off" id="website" name="website" onChange={(event) => updateField("website", event.target.value)} tabIndex={-1} value={fields.website} /></div>
                 <div className="form-row">
-                  <FormInput error={fieldErrors.name} label="Full name" name="name" onChange={(value) => updateField("name", value)} placeholder="Your name" value={fields.name} />
-                  <FormInput error={fieldErrors.phone} label="Phone number" name="phone" onChange={(value) => updateField("phone", value)} placeholder="+91 98765 43210" type="tel" value={fields.phone} />
+                  <FormInput error={fieldErrors["name"]} label="Full name" name="name" onChange={(value) => updateField("name", value)} placeholder="Your name" value={fields.name} />
+                  <FormInput error={fieldErrors["phone"]} label="Phone number" name="phone" onChange={(value) => updateField("phone", value)} placeholder="+91 98765 43210" type="tel" value={fields.phone} />
                 </div>
                 <div className="form-row">
-                  <FormInput autoComplete="email" error={fieldErrors.email} label="Email address" name="email" onChange={(value) => updateField("email", value)} placeholder="you@example.com" type="email" value={fields.email} />
+                  <FormInput autoComplete="email" error={fieldErrors["email"]} label="Email address" name="email" onChange={(value) => updateField("email", value)} placeholder="you@example.com" type="email" value={fields.email} />
                   <div className="form-field">
                     <label htmlFor="service">Service of interest <span>OPTIONAL</span></label>
                     <div className="select-wrap">
-                      <select id="service" onChange={(event) => updateField("service", event.target.value)} value={fields.service}>
+                      <select aria-invalid={Boolean(fieldErrors["service"])} id="service" onChange={(event) => updateField("service", event.target.value)} value={fields.service}>
                         <option value="">Choose a topic</option>
                         {websiteEnquiryServices.map((service) => <option key={service} value={service}>{service}</option>)}
                       </select>
                       <ChevronDown aria-hidden="true" />
                     </div>
-                    {fieldErrors.service && <p className="field-error" role="alert">{fieldErrors.service}</p>}
+                    {fieldErrors["service"] && <p className="field-error" role="alert">{fieldErrors["service"]}</p>}
                   </div>
                 </div>
                 <div className="form-field">
                   <label htmlFor="message">Message <span>{fields.message.length} / 1,000</span></label>
-                  <Textarea aria-invalid={Boolean(fieldErrors.message)} autoComplete="off" id="message" maxLength={1000} onChange={(event) => updateField("message", event.target.value)} placeholder="What would you like to know?" value={fields.message} />
-                  {fieldErrors.message && <p className="field-error" role="alert">{fieldErrors.message}</p>}
+                  <Textarea aria-invalid={Boolean(fieldErrors["message"])} autoComplete="off" id="message" maxLength={1000} onChange={(event) => updateField("message", event.target.value)} placeholder="What would you like to know?" value={fields.message} />
+                  {fieldErrors["message"] && <p className="field-error" role="alert">{fieldErrors["message"]}</p>}
                 </div>
                 <div className="consent-block">
                   <Checkbox checked={fields.consent} id="consent" onCheckedChange={(checked) => updateField("consent", checked === true)} />
                   <label htmlFor="consent">I agree to Money Talks contacting me about my enquiry and storing my details for that purpose.</label>
                 </div>
-                {fieldErrors.consent && <p className="field-error consent-error" role="alert">{fieldErrors.consent}</p>}
+                {fieldErrors["consent"] && <p className="field-error consent-error" role="alert">{fieldErrors["consent"]}</p>}
                 <div className="form-footer">
                   <p><ShieldCheck aria-hidden="true" /> Your details stay private. Read our <a href="#privacy">privacy note.</a></p>
                   <Button className="button-gold form-submit" disabled={status === "submitting"} size="lg" type="submit">
@@ -550,11 +578,18 @@ function Index() {
             <div className="footer-links"><span>YOUR PRIVACY</span><p>Enquiries are kept securely so Money Talks can respond to you. Anonymous visitors cannot access submitted details.</p><a href="#contact">Contact us about your data</a></div>
           </div>
           <div className="footer-disclaimer"><p><strong>IMPORTANT INFORMATION</strong><br />Financial markets involve risk. Investments and trading activities can result in losses. Past performance is not indicative of future results. Information is educational and informational and should not be treated as a promise of performance. Portfolio-related services are subject to applicable regulatory authorisation. Please consider eligibility, fees, and risks before proceeding.{businessConfig.registrationDetails && <> <br />{businessConfig.registrationDetails}</>}</p></div>
+          <div className="footer-legal"><button onClick={() => setActiveLegalDocument("privacy")} type="button">Privacy notice</button><button onClick={() => setActiveLegalDocument("terms")} type="button">Terms &amp; conditions</button><button onClick={() => setActiveLegalDocument("risk")} type="button">Risk disclosure</button></div>
           <div className="footer-bottom"><span>© {new Date().getFullYear()} Money Talks. All rights reserved.</span><span>INSIGHT <i /> INTELLIGENCE <i /> GROWTH</span></div>
         </div>
       </footer>
 
       {whatsappLink && <a aria-label="Chat with Money Talks on WhatsApp" className="floating-whatsapp" href={whatsappLink} rel="noreferrer" target="_blank"><MessageCircle aria-hidden="true" /><span>Chat with us</span></a>}
+
+      <Dialog open={activeLegalDocument !== null} onOpenChange={(open) => { if (!open) setActiveLegalDocument(null); }}>
+        <DialogContent className="legal-dialog">
+          {activeLegalDocument && <DialogHeader className="legal-dialog-header"><DialogTitle>{legalContent[activeLegalDocument].title}</DialogTitle><DialogDescription>{legalContent[activeLegalDocument].description}</DialogDescription></DialogHeader>}
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }
@@ -574,7 +609,7 @@ function FormInput({
   placeholder: string;
   value: string;
   onChange: (value: string) => void;
-  error?: string;
+  error: string | undefined;
   type?: string;
   autoComplete?: string;
 }) {

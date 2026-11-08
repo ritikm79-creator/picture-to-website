@@ -17,6 +17,13 @@ describe("website enquiry validation", () => {
     expect(websiteEnquirySchema.safeParse({ ...validEnquiry, phone }).success).toBe(true);
   });
 
+  it("accepts and normalizes a mobile number with conventional country-code spacing", () => {
+    const result = websiteEnquirySchema.safeParse({ ...validEnquiry, phone: "+91 98765 43210" });
+
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.phone).toBe("+919876543210");
+  });
+
   it("rejects a phone number that is not ten Indian mobile digits", () => {
     expect(websiteEnquirySchema.safeParse({ ...validEnquiry, phone: "12345" }).success).toBe(false);
   });

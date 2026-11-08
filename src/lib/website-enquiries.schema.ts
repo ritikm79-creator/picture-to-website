@@ -16,7 +16,8 @@ export const websiteEnquirySchema = z.object({
   phone: z
     .string()
     .trim()
-    .regex(/^(?:\+91)?[6-9]\d{9}$/, "Enter a valid Indian mobile number, with or without +91."),
+    .transform((phone) => phone.replace(/[\s()-]/g, ""))
+    .pipe(z.string().regex(/^(?:\+91)?[6-9]\d{9}$/, "Enter a valid Indian mobile number, with or without +91.")),
   email: z
     .string()
     .trim()
@@ -30,7 +31,7 @@ export const websiteEnquirySchema = z.object({
     .min(1, "Please tell us a little about your enquiry.")
     .max(1000, "Please keep your message under 1,000 characters."),
   consent: z.literal(true, {
-    error: "Please agree to being contacted about your enquiry.",
+    errorMap: () => ({ message: "Please agree to being contacted about your enquiry." }),
   }),
   website: z.string().max(0, "Please leave this field blank.").default(""),
 });

@@ -15,6 +15,13 @@
       "when": 1793992120285,
       "tag": "0001_secure_enquiry_rate_limiting",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794114342338,
+      "tag": "0002_expire_enquiry_rate_limits",
+      "breakpoints": true
     }
   ]
 }
