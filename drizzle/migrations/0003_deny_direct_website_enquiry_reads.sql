@@ -1,0 +1,1 @@
+CREATE POLICY "Visitors cannot directly read website enquiries" ON public.website_enquiries FOR SELECT TO anon, authenticated USING (false);

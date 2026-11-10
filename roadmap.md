@@ -1,3 +1,3 @@
 - [x] Build the Money Talks financial-services single-page site based on the reference image and provided business brief.
-- [ ] Save website enquiries securely in Lovable Cloud and validate the submission flow.
-- [ ] Run relevant tests, inspect the preview build, and commit the finished work.
+- [x] Save website enquiries securely in Lovable Cloud and validate the submission flow.
+- [x] Run relevant tests, inspect the preview build and mobile layout, and commit the finished work.
